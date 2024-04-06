@@ -1,0 +1,18 @@
+version: '3'
+services:
+  chat-server:
+    image: ngthminhdev/chat-app-server:${TAG}
+    ports:
+      - '5000:5000'
+    environment:
+      - CONFIG_SERVER_HOST=3.0.75.137
+      - CONFIG_SERVER_PORT=5000
+      - CONFIG_API_PREFIX=/api
+      - CONFIG_MONGODB_HOST=3.0.75.137
+      - CONFIG_MONGODB_PORT=27017
+      - CONFIG_MONGODB_USERNAME=kimlien0602
+      - CONFIG_MONGODB_PASSWORD=kimlien0602
+      - CONFIG_MONGODB_DATABASE=chat_app
+      - CONFIG_ACCESS_TOKEN_SECRET=DangKimLien
+      - CONFIG_REFRESH_TOKEN_SECRET=08TMDT
+      - CONFIG_REDIS_URI=redis://:kimlien0602@3.0.75.137:6379/0
