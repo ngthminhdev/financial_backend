@@ -6,5 +6,5 @@ if [ -z "$TAG" ]; then
 fi  
 
 sudo docker-compose down
-sudo TAG=${TAG} docker-compose pull ngthminhdev/chat-app-server:${TAG}
+sudo TAG=${TAG} docker-compose pull ngthminhdev/financial_management:${TAG}
 sudo TAG=${TAG} docker-compose up -d

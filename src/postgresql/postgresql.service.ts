@@ -17,12 +17,14 @@ import {categoryScript} from 'src/sql/category-sql';
 export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
   private postgresClient: Client;
   logger = new Logger('PostgreSQL-Service');
-
+  isConnected: Boolean = false;
   async onModuleInit() {
     await this.connectPostgreSQL();
 
     this.logger.log('Start initing tables...');
-    await this.initTables();
+    if (this.isConnected) {
+      await this.initTables();
+    }
     this.logger.log('Init tables successfully');
   }
 
@@ -39,11 +41,10 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
   }
 
   async connectPostgreSQL() {
-    let isConnected: Boolean = false;
     let retryTime = RetryTime.Init;
     const maxRetry = RetryTime.Ten;
 
-    while (!isConnected && retryTime < maxRetry) {
+    while (!this.isConnected && retryTime < maxRetry) {
       try {
         this.logger.log('Connecting to PostgreSQL...');
         this.postgresClient = new Client({
@@ -57,10 +58,10 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
           
         });
         await this.postgresClient.connect();
-        isConnected = true;
+        this.isConnected = true;
         this.logger.log('Connect to PostgreSQL successfully');
       } catch (e) {
-        isConnected = false;
+        this.isConnected = false;
         retryTime++;
         this.logger.error(`Error connecting to PostgreSQL at ${retryTime} times: ${e}`);
       }

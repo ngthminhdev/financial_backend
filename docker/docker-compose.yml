@@ -1,18 +1,17 @@
 version: '3'
 services:
-  chat-server:
-    image: ngthminhdev/chat-app-server:${TAG}
+  financial_management:
+    image: ngthminhdev/financial_management:${TAG}
     ports:
-      - '5000:5000'
+      - '2002:2002'
     environment:
-      - CONFIG_SERVER_HOST=3.0.75.137
-      - CONFIG_SERVER_PORT=5000
+      - CONFIG_SERVER_HOST=54.179.222.129
+      - CONFIG_SERVER_PORT=2002
       - CONFIG_API_PREFIX=/api
-      - CONFIG_MONGODB_HOST=3.0.75.137
-      - CONFIG_MONGODB_PORT=27017
-      - CONFIG_MONGODB_USERNAME=kimlien0602
-      - CONFIG_MONGODB_PASSWORD=kimlien0602
-      - CONFIG_MONGODB_DATABASE=chat_app
-      - CONFIG_ACCESS_TOKEN_SECRET=DangKimLien
-      - CONFIG_REFRESH_TOKEN_SECRET=08TMDT
-      - CONFIG_REDIS_URI=redis://:kimlien0602@3.0.75.137:6379/0
+      - CONFIG_POSTGRES_HOST=db-financial-management.c38wakeeobqx.ap-southeast-1.rds.amazonaws.com
+      - CONFIG_POSTGRES_PORT=5432
+      - CONFIG_POSTGTES_USER=ngthminhdev
+      - CONFIG_POSTGRES_PASSWORD=uGku2WNessmtHoObjto1
+      - CONFIG_POSTGRES_DATABASE=financial_management
+      - CONFIG_ACCESS_TOKEN_SECRET=uGku2WNessmtHoObjto1
+      - CONFIG_REFRESH_TOKEN_SECRET=uGku2WNessmtHoObjto1
