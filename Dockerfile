@@ -21,7 +21,7 @@ WORKDIR /SERVICE
 
 COPY [".", "."]
 
-EXPOSE 5000
+EXPOSE 2002
 
 RUN yarn build
 
