@@ -16,6 +16,6 @@ CONFIG_ARGS="s|CONFIG_SERVER_HOST|${CONFIG_SERVER_HOST}|g;\
 
 sed -i -e "$CONFIG_ARGS" .env
 
-yarn start:prod
+npm run start:prod
 
 exec "$@"
