@@ -1,9 +1,10 @@
 import {HttpStatus, Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { v4 as genRandomUUID } from 'uuid';
+
 import {TimeToLive} from 'src/enums';
 import {ExceptionResponse} from 'src/exceptions/common.exception';
-
 import {IUser} from 'src/postgresql/interfaces/user.interface';
 import {PostgresqlService} from 'src/postgresql/postgresql.service';
 import {LoginDto} from './dto/login.dto';
@@ -45,7 +46,7 @@ export class AuthService {
       confirm_password: confirmPassword,
     } = data;
 
-    const [ isUserExists ] = await this.postgresService.query<IUser>(`SELECT * FROM public.user WHERE account_name = $1`, [accountName]);
+    const [ isUserExists ] = await this.postgresService.execute<IUser>(`SELECT * FROM public.user WHERE account_name = $1`, [accountName]);
 
     if (isUserExists) {
       throw new ExceptionResponse(HttpStatus.CONFLICT, 'Tài khoản đã tồn tại');
@@ -56,11 +57,25 @@ export class AuthService {
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
+    const userId = genRandomUUID();
 
-    await this.postgresService.query(`
-      INSERT INTO public.user (account_name, user_name, email, password)
-      VALUES($1, $2, $3, $4)
-    `, [accountName, userName, email, hashPassword]);
+    await this.postgresService.execute(`
+      INSERT INTO public.user (id, account_name, user_name, email, password)
+      VALUES($1, $2, $3, $4, $5)
+    `, [userId, accountName, userName, email, hashPassword]);
+
+
+    await Promise.all([
+      this.postgresService.execute(`
+        INSERT INTO public.user_config (user_id) VALUES ($1)
+      `, [userId]),
+      this.postgresService.execute(`
+        INSERT INTO public.member_ship (user_id) VALUES ($1)
+      `, [userId]),
+      this.postgresService.execute(`
+        INSERT INTO public.wallet (user_id) VALUES ($1)
+      `, [userId]),
+    ]);
 
     return null;
   }
@@ -68,7 +83,16 @@ export class AuthService {
   async login(body: LoginDto) {
     const {account_name: accountName, password} = body;
 
-    const [user] = await this.postgresService.query<IUser>(`SELECT * FROM public.user WHERE account_name = $1`, [accountName]);
+    const [user] = await this.postgresService.execute<IUser>(`
+      SELECT 
+        u.*,
+        m.type as member_ship_type,
+        c.start_date AS config_start_date
+      FROM public.user u
+        INNER JOIN public.member_ship m ON u.id = m.user_id
+        INNER JOIN public.user_config c ON u.id = c.user_id
+      WHERE account_name = $1`
+    , [accountName]);
 
 
     if (!user) {
@@ -91,7 +115,7 @@ export class AuthService {
     );
     return {
       ...user,
-      accessToken,
+      access_token: accessToken,
     };
   }
 }

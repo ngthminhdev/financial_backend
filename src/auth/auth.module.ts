@@ -7,6 +7,6 @@ import { PostgresqlService } from 'src/postgresql/postgresql.service';
 @Module({
   imports: [],
   controllers: [AuthController],
-  providers: [AuthService, JwtService, PostgresqlService],
+  providers: [AuthService, JwtService],
 })
 export class AuthModule {}

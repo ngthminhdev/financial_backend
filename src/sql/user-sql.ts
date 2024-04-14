@@ -13,9 +13,7 @@ export const  userScript = `CREATE TABLE IF NOT EXISTS public.user (
     modified_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_id ON public.user (id);
-
-CREATE INDEX IF NOT EXISTS idx_user_account_name_password ON public.user (account_name, password);
+CREATE INDEX IF NOT EXISTS idx_user_account_name_password ON public.user (account_name);
 
 CREATE INDEX IF NOT EXISTS idx_user_permissions ON public.user (permissions);
 `;
