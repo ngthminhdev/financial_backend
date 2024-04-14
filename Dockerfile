@@ -6,7 +6,7 @@ RUN ln -fns /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime && echo Asis/Ho_
 
 COPY ["package.json", "/SERVICE/package.json"]
 COPY ["package-lock.json", "/SERVICE/package-lock.json"]
-COPY ["env", "/SERVICE/.env"]
+COPY ["env", "/SERVICE/.env.production"]
 COPY ["start.sh", "/start.sh"]
 
 RUN chmod -R 777 /SERVICE
