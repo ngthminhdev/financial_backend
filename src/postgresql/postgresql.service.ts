@@ -3,22 +3,28 @@ import {
   Injectable,
   Logger,
   OnModuleDestroy,
-  OnModuleInit,
+  OnModuleInit
 } from '@nestjs/common';
-import { Client, QueryArrayResult } from 'pg';
+import {Client, QueryArrayResult} from 'pg';
 
-import { userScript } from "../sql/user-sql";
+import {userScript} from "../sql/user-sql";
 
-import { RetryTime } from 'src/enums';
+import {RetryTime} from 'src/enums';
 import {categoryScript} from 'src/sql/category-sql';
+import {goatScript} from 'src/sql/goat-sql';
+import {memberShipScript} from 'src/sql/member-ship-sql';
+import {transactionHistoryScript} from 'src/sql/transaction-history-sql';
+import {walletScript} from 'src/sql/wallet-sql';
+import {userConfigScript} from 'src/sql/user-config-sql';
 
 @Global()
 @Injectable()
 export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
   private postgresClient: Client;
-  logger = new Logger('PostgreSQL-Service');
+  logger = new Logger('PostgreSQL Service');
   isConnected: Boolean = false;
   async onModuleInit() {
+    if (this.isConnected) return;
     await this.connectPostgreSQL();
 
     this.logger.log('Start initing tables...');
@@ -34,10 +40,20 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
 
   async initTables() {
     // const userTableScript = await fs.readFileSync(join(__dirname, '..', '/sql/user.sql'));
-    await Promise.all([
-      this.postgresClient.query(userScript),
-      this.postgresClient.query(categoryScript),
-    ]);
+    await this.postgresClient.query(userScript);
+    this.logger.log('Init table USER successfully!')
+    await this.postgresClient.query(userConfigScript);
+    this.logger.log('Init table USER_CONFIG successfully!')
+    await this.postgresClient.query(memberShipScript);
+    this.logger.log('Init table MEMBER_SHIP successfully!')
+    await this.postgresClient.query(categoryScript);
+    this.logger.log('Init table CATEGORY successfully!')
+    await this.postgresClient.query(walletScript);
+    this.logger.log('Init table GOAT successfully!')
+    await this.postgresClient.query(goatScript);
+    this.logger.log('Init table WALLET successfully!')
+    await this.postgresClient.query(transactionHistoryScript);
+    this.logger.log('Init table TRANSACTION_HISTORY successfully!')
   }
 
   async connectPostgreSQL() {
@@ -55,7 +71,7 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
           database: process.env.POSTGRES_DATABASE,
           connectionTimeoutMillis: 5000,
           keepAlive: true,
-          
+
         });
         await this.postgresClient.connect();
         this.isConnected = true;
@@ -68,7 +84,7 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async query<T>(text: string, values?: any[]): Promise<T[]> {
+  async execute<T>(text: string, values?: any[]): Promise<T[]> {
     const result: QueryArrayResult<T[]> = await this.postgresClient.query(
       text,
       values,
@@ -76,7 +92,7 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
     return result.rows as T[];
   }
 
-  async queryDetail<T>(text: string, values?: any[]): Promise<QueryArrayResult<T[]>> {
+  async executeDetail<T>(text: string, values?: any[]): Promise<QueryArrayResult<T[]>> {
     const result: QueryArrayResult<T[]> = await this.postgresClient.query(
       text,
       values,

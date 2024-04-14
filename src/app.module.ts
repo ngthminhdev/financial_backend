@@ -11,7 +11,7 @@ import { CategoryModule } from './category/category.module';
 @Module({
   imports: [
     // env
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: `.env${process.env.NODE_ENV}` }),
 
     AppConfigModule,
     PostgresqlModule,

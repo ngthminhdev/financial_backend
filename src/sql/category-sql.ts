@@ -7,7 +7,5 @@ export const categoryScript = `CREATE TABLE IF NOT EXISTS public.category (
     modified_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_category_id ON public.category (id);
-
-CREATE INDEX IF NOT EXISTS idx_category_name_status ON public.category (name, STATUS);
+CREATE INDEX IF NOT EXISTS idx_category_name_icon_status ON public.category (name, icon, status);
 `;

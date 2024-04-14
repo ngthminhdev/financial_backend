@@ -1,8 +1,7 @@
-export const  walletScript = `CREATE TABLE IF NOT EXISTS public.wallet (
+export const  memberShipScript = `CREATE TABLE IF NOT EXISTS public.member_ship (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID,
     name VARCHAR(255) DEFAULT 'Mặc định',
-    balance DECIMAL(18, 2),
     type SMALLINT DEFAULT 1,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -10,5 +9,5 @@ export const  walletScript = `CREATE TABLE IF NOT EXISTS public.wallet (
     FOREIGN KEY (user_id) REFERENCES public.user(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_wallet_balance ON public.wallet (balance);
+CREATE INDEX IF NOT EXISTS idx_member_ship_user_id ON public.member_ship (user_id);
 `;
