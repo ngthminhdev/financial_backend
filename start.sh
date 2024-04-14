@@ -14,7 +14,7 @@ CONFIG_ARGS="s|CONFIG_SERVER_HOST|${CONFIG_SERVER_HOST}|g;\
         	s|CONFIG_ACCESS_TOKEN_SECRET|${CONFIG_ACCESS_TOKEN_SECRET}|g;\
         	s|CONFIG_REFRESH_TOKEN_SECRET|${CONFIG_REFRESH_TOKEN_SECRET}|g"
 
-sed -i -e "$CONFIG_ARGS" .env
+sed -i -e "$CONFIG_ARGS" .env.production
 
 npm run start:prod
 
