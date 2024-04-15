@@ -1,34 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TransactionService } from './transaction.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import {Body, Controller, Get, HttpStatus, Post, Query, Res} from '@nestjs/common';
+import {Response} from 'express';
+import {CatchException} from 'src/exceptions/common.exception';
+import {GetUserIdFromToken} from 'src/utils/utils.decorators';
+import {GetListDto} from 'src/utils/utils.dto';
+import {BaseResponse, ListResponse} from 'src/utils/utils.response';
+import {CreateTransactionDto} from './dto/create-transaction.dto';
+import {TransactionListDto} from './dto/get-list.dto';
+import {TransactionService} from './transaction.service';
 
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
-  create(@Body() createTransactionDto: CreateTransactionDto) {
-    return this.transactionService.create(createTransactionDto);
+  async create(
+    @GetUserIdFromToken() userId: string,
+    @Body() body: CreateTransactionDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.transactionService.create(userId, body);
+      return res
+        .status(HttpStatus.CREATED)
+        .send(new BaseResponse({data, message: 'Tạo giao dịch thành công'}));
+    } catch (e) {
+      throw new CatchException(e);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.transactionService.findAll();
+  async getList(
+    @GetUserIdFromToken() userId: string,
+    @Query() query: TransactionListDto,
+    @Res() res: Response,
+  ) {
+    try {
+      console.log({userId})
+      const { skip, total, data } = await this.transactionService.getList(userId, query);
+      return res
+        .status(HttpStatus.OK)
+        .send(new ListResponse({skip, total, data}));
+    } catch (e) {
+      throw new CatchException(e);
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
-    return this.transactionService.update(+id, updateTransactionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionService.remove(+id);
-  }
 }

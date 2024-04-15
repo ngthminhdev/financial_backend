@@ -38,7 +38,7 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
     await this.postgresClient.end();
   }
 
-  async initTables() {
+  private async initTables() {
     // const userTableScript = await fs.readFileSync(join(__dirname, '..', '/sql/user.sql'));
     await this.postgresClient.query(userScript);
     this.logger.log('Init table USER successfully!')
@@ -56,7 +56,7 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Init table TRANSACTION_HISTORY successfully!')
   }
 
-  async connectPostgreSQL() {
+  private async connectPostgreSQL() {
     let retryTime = RetryTime.Init;
     const maxRetry = RetryTime.Ten;
 
