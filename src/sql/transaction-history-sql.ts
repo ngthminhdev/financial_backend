@@ -7,6 +7,8 @@ export const  transactionHistoryScript = `CREATE TABLE IF NOT EXISTS public.tran
     amount DECIMAL(18, 2),
     balance_from DECIMAL(18, 2),
     balance_to DECIMAL(18, 2),
+    type SMALLINT DEFAULT 2,
+    date DATE DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 

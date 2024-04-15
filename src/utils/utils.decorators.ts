@@ -1,8 +1,7 @@
-import {createParamDecorator, ExecutionContext, HttpStatus, Logger, SetMetadata} from '@nestjs/common';
-
+import {createParamDecorator, ExecutionContext, HttpStatus, Logger} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
+
 import {ExceptionResponse} from "../exceptions/common.exception";
-import {DEVICE_METADATA} from "../constants";
 
 export const GetUserIdFromToken = createParamDecorator<string>(async (data: unknown, ctx: ExecutionContext) => {
     try {
@@ -31,5 +30,3 @@ export const GetToken = createParamDecorator<string>(async (data: unknown, ctx: 
     }
     return bearer.split(' ')[1];
 });
-
-export const LoginMetadata = () => SetMetadata(DEVICE_METADATA, true);

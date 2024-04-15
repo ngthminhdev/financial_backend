@@ -1,10 +1,3 @@
-export enum RedisKey {
-    OnlineUsers = 'online-users',
-    UserRooms = 'user-rooms',
-    SavedDocuments = 'saved-documents',
-}
-
-
 export enum RetryTime {
     Init = 0,
     Ten = 10
@@ -26,3 +19,8 @@ export enum ResourceTypeEnum {
     Audio,
     File,
   }
+
+export enum Sort {
+    Asc = '1',
+    Desc = '-1'
+}
