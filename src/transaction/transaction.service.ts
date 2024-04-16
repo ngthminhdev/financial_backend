@@ -1,9 +1,11 @@
 import {HttpStatus, Injectable} from '@nestjs/common';
+import * as moment from 'moment';
 import {Sort} from 'src/enums';
 
 import {ExceptionResponse} from 'src/exceptions/common.exception';
 import {getSortType} from 'src/helpers/functional.helper';
 import {ICategory} from 'src/postgresql/interfaces/category.interface';
+import {ITCategoryGroup} from 'src/postgresql/interfaces/transaction-category-group.interface';
 import {ITransactionHistory} from 'src/postgresql/interfaces/transaction_history.interface';
 import {IWallet} from 'src/postgresql/interfaces/wallet.interface';
 import {PostgresqlService} from 'src/postgresql/postgresql.service';
@@ -96,5 +98,34 @@ export class TransactionService {
       total: +count.total || 0,
       data
     }
+  } 
+
+
+  async getCategoryTransaction(userId: string, query: TransactionListDto) {
+    const {
+      wallet_id: walletId,
+      type = TransactionType.Spent,
+      from_date: fromDate = moment().startOf('month').format('YYYY/MM/DD'),
+      to_date: toDate = moment().endOf('month').format('YYYY/MM/DD'),
+    } = query;
+
+  
+    const data = await this.pg.execute<ITCategoryGroup>(`
+        SELECT 
+              c.id as id,
+              c.name as name,
+              SUM(t.amount) as amount_used
+          FROM public.transaction_history t
+          INNER JOIN public.category c
+          ON t.category_id = c.id
+          WHERE t.wallet_id = $1
+          AND date >= '${fromDate}' AND date <= '${toDate}'
+          AND t.type = ${type}
+          GROUP BY c.id, c.name
+          ORDER BY amount_used ASC;
+      `, [walletId]
+      );
+
+    return data;
   } 
 }

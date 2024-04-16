@@ -2,7 +2,6 @@ import {Body, Controller, Get, HttpStatus, Post, Query, Res} from '@nestjs/commo
 import {Response} from 'express';
 import {CatchException} from 'src/exceptions/common.exception';
 import {GetUserIdFromToken} from 'src/utils/utils.decorators';
-import {GetListDto} from 'src/utils/utils.dto';
 import {BaseResponse, ListResponse} from 'src/utils/utils.response';
 import {CreateTransactionDto} from './dto/create-transaction.dto';
 import {TransactionListDto} from './dto/get-list.dto';
@@ -35,7 +34,6 @@ export class TransactionController {
     @Res() res: Response,
   ) {
     try {
-      console.log({userId})
       const { skip, total, data } = await this.transactionService.getList(userId, query);
       return res
         .status(HttpStatus.OK)
@@ -45,4 +43,19 @@ export class TransactionController {
     }
   }
 
+  @Get('category-group')
+  async getCategoryTransaction(
+    @GetUserIdFromToken() userId: string,
+    @Query() query: TransactionListDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.transactionService.getCategoryTransaction(userId, query);
+      return res
+        .status(HttpStatus.OK)
+        .send(new BaseResponse({data}));
+    } catch (e) {
+      throw new CatchException(e);
+    }
+  }
 }
