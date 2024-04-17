@@ -67,6 +67,7 @@ export class TransactionService {
       sort_by: sortBy = 'date',
       sort_type: sortType = Sort.Desc,
       wallet_id: walletId,
+      type = TransactionType.Spent,
     } = query;
 
     const pgSortType = getSortType(sortType);
@@ -81,6 +82,7 @@ export class TransactionService {
         INNER JOIN public.category c
           ON t.category_id = c.id
         WHERE user_id = $1 AND wallet_id = $2
+        AND t.type = ${type}
         ORDER BY ${sortBy} ${pgSortType}, created_at DESC
         OFFSET $3
         LIMIT $4
