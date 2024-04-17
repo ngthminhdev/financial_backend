@@ -120,9 +120,12 @@ export class TransactionService {
           FROM public.transaction_history t
           INNER JOIN public.category c
           ON t.category_id = c.id
+          INNER JOIN public.user_config u
+          ON t.user_id = u.user_id
           WHERE t.wallet_id = $1
           AND date >= '${fromDate}' AND date <= '${toDate}'
           AND t.type = ${type}
+          AND c.id NOT IN (SELECT unnest(u.un_apply_categories))
           GROUP BY c.id, c.name
           ORDER BY amount_used ASC;
       `, [walletId]
