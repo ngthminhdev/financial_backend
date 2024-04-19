@@ -6,7 +6,7 @@ import {ExceptionResponse} from 'src/exceptions/common.exception';
 import {getSortType} from 'src/helpers/functional.helper';
 import {ICategory} from 'src/postgresql/interfaces/category.interface';
 import {ITCategoryGroup} from 'src/postgresql/interfaces/transaction-category-group.interface';
-import {ITransactionHistory} from 'src/postgresql/interfaces/transaction_history.interface';
+import {IInOutTransaction, ITransactionHistory} from 'src/postgresql/interfaces/transaction_history.interface';
 import {IWallet} from 'src/postgresql/interfaces/wallet.interface';
 import {PostgresqlService} from 'src/postgresql/postgresql.service';
 import {TransactionType} from './constants';
@@ -132,5 +132,52 @@ export class TransactionService {
       );
 
     return data;
+  } 
+
+  async getInOutTransaction(userId: string, query: TransactionListDto) {
+    const {
+      wallet_id: walletId,
+      // type = TransactionType.Spent,
+      from_date: fromDate = moment().startOf('month').format('YYYY/MM/DD'),
+      to_date: toDate = moment().endOf('month').format('YYYY/MM/DD'),
+    } = query;
+
+  
+    const [total, list] = await Promise.all([
+      this.pg.execute<IInOutTransaction>(`
+        SELECT 
+          type,
+          SUM(amount) as amount
+        FROM public.transaction_history
+        WHERE wallet_id = $1
+        AND date >= '${fromDate}' AND date <= '${toDate}'
+        GROUP BY type
+        ORDER BY type ASC;
+      `, [walletId]
+      ),
+      this.pg.execute<IInOutTransaction>(`
+        SELECT 
+            date,
+            SUM(CASE WHEN t.type = 1 THEN amount ELSE 0 END) AS income,
+            SUM(CASE WHEN t.type = 2 THEN amount ELSE 0 END) AS spent
+        FROM public.transaction_history t
+        INNER JOIN public.user_config u
+        ON t.user_id = u.user_id
+        WHERE wallet_id = $1
+            AND date >= '${fromDate}' AND date <= '${toDate}'
+            AND t.category_id NOT IN (SELECT unnest(u.un_apply_categories))
+        GROUP BY date
+        ORDER BY date ASC;
+        `, [walletId]
+      ),
+    ]);
+
+    return { 
+      total: {
+        income: total[0].amount,
+        spent: total[1].amount,
+      },
+      list
+    };
   } 
 }

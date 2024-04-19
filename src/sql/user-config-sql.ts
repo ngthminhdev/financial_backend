@@ -3,6 +3,7 @@ export const userConfigScript = `CREATE TABLE IF NOT EXISTS public.user_config (
     user_id UUID,
     type SMALLINT DEFAULT 1,
     start_date SMALLINT DEFAULT 5,
+    un_apply_categories UUID[],
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 

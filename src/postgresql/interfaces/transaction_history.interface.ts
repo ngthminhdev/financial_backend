@@ -10,3 +10,8 @@ export interface ITransactionHistory {
     created_at: string;
     modified_at: string;
 }
+
+export interface IInOutTransaction {
+    type: number;
+    amount: number;
+}

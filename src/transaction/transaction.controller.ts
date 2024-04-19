@@ -58,4 +58,20 @@ export class TransactionController {
       throw new CatchException(e);
     }
   }
+
+  @Get('in-out')
+  async getInOutTransaction(
+    @GetUserIdFromToken() userId: string,
+    @Query() query: TransactionListDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.transactionService.getInOutTransaction(userId, query);
+      return res
+        .status(HttpStatus.OK)
+        .send(new BaseResponse({data}));
+    } catch (e) {
+      throw new CatchException(e);
+    }
+  }
 }
