@@ -16,8 +16,8 @@ export class HttpLoggerInterceptor implements NestInterceptor {
         next: CallHandler<any>,
     ): Observable<any> | Promise<Observable<any>> {
         const req = context.switchToHttp().getRequest();
-        const {ip, method, originalUrl, body = {}} = req;
-        this.logger.log(`url:${originalUrl}, method:${method}, ip:${ip}, body:${JSON.stringify(body, null, 1)}`);
+        const {ip, method, originalUrl, body = {}, query = {}} = req;
+        this.logger.log(`url:${originalUrl}, method:${method}, ip:${ip}, body:${JSON.stringify(body, null, 1)}, query:${JSON.stringify(query, null, 1)}`);
         return next.handle();
     }
 }

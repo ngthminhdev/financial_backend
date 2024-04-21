@@ -74,4 +74,20 @@ export class TransactionController {
       throw new CatchException(e);
     }
   }
+
+  @Get('wallet')
+  async getWallets(
+    @GetUserIdFromToken() userId: string,
+    @Query() query: TransactionListDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.transactionService.getWallets(userId, query);
+      return res
+        .status(HttpStatus.OK)
+        .send(new BaseResponse({data}));
+    } catch (e) {
+      throw new CatchException(e);
+    }
+  }
 }

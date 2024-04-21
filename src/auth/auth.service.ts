@@ -9,6 +9,7 @@ import {IUser} from 'src/postgresql/interfaces/user.interface';
 import {PostgresqlService} from 'src/postgresql/postgresql.service';
 import {LoginDto} from './dto/login.dto';
 import {RegisterDto} from './dto/register.dto';
+import {WalletType} from 'src/transaction/constants';
 
 @Injectable()
 export class AuthService {
@@ -73,7 +74,11 @@ export class AuthService {
         INSERT INTO public.member_ship (user_id) VALUES ($1)
       `, [userId]),
       this.postgresService.execute(`
-        INSERT INTO public.wallet (user_id) VALUES ($1)
+        INSERT INTO public.wallet (user_id, type) 
+        VALUES 
+          ($1, ${WalletType.Default}),
+          ($1, ${WalletType.Spent}),
+          ($1, ${WalletType.Invest});
       `, [userId]),
     ]);
 

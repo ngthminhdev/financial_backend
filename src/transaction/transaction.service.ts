@@ -12,6 +12,7 @@ import {PostgresqlService} from 'src/postgresql/postgresql.service';
 import {TransactionType} from './constants';
 import {CreateTransactionDto} from './dto/create-transaction.dto';
 import {TransactionListDto} from './dto/get-list.dto';
+import {WalletDto} from './dto/wallet.dto';
 
 @Injectable()
 export class TransactionService {
@@ -115,6 +116,7 @@ export class TransactionService {
     const data = await this.pg.execute<ITCategoryGroup>(`
         SELECT 
               c.id as id,
+              c.icon as icon,
               c.name as name,
               SUM(t.amount) as amount_used
           FROM public.transaction_history t
@@ -126,7 +128,7 @@ export class TransactionService {
           AND date >= '${fromDate}' AND date <= '${toDate}'
           AND t.type = ${type}
           AND c.id NOT IN (SELECT unnest(u.un_apply_categories))
-          GROUP BY c.id, c.name
+          GROUP BY c.id, c.name, c.icon
           ORDER BY amount_used ASC;
       `, [walletId]
       );
@@ -142,18 +144,18 @@ export class TransactionService {
       to_date: toDate = moment().endOf('month').format('YYYY/MM/DD'),
     } = query;
 
-  
     const [total, list] = await Promise.all([
       this.pg.execute<IInOutTransaction>(`
         SELECT 
           type,
           SUM(amount) as amount
         FROM public.transaction_history
-        WHERE wallet_id = $1
-        AND date >= '${fromDate}' AND date <= '${toDate}'
+        WHERE date >= '${fromDate}' AND date <= '${toDate}'
+          AND user_id = $1
+            ${walletId ? `AND wallet_id = '${walletId}' ` : ''} 
         GROUP BY type
         ORDER BY type ASC;
-      `, [walletId]
+      `, [userId]
       ),
       this.pg.execute<IInOutTransaction>(`
         SELECT 
@@ -163,12 +165,13 @@ export class TransactionService {
         FROM public.transaction_history t
         INNER JOIN public.user_config u
         ON t.user_id = u.user_id
-        WHERE wallet_id = $1
+        WHERE t.category_id NOT IN (SELECT unnest(u.un_apply_categories)) 
+            AND t.user_id = $1
             AND date >= '${fromDate}' AND date <= '${toDate}'
-            AND t.category_id NOT IN (SELECT unnest(u.un_apply_categories))
+            ${walletId ? `AND t.wallet_id = '${walletId}' ` : ''} 
         GROUP BY date
         ORDER BY date ASC;
-        `, [walletId]
+        `, [userId]
       ),
     ]);
 
@@ -180,4 +183,34 @@ export class TransactionService {
       list
     };
   } 
+
+  async getWallets(userId: string, query: WalletDto) {
+    const {
+      wallet_id: walletIds = '',
+      type: types = '',
+      date = moment().startOf('month').format('YYYY/MM/DD'),
+    } = query;
+
+    const parseWalletIds: string[] = global._.compact(walletIds.split(',')).map(id => `'${id}'`);
+    const parseTypes: number[] = global._.compact(types.split(',')).map(id => +id);
+
+    const cmd: string = `
+      SELECT
+        DISTINCT(w.id),
+        w.*,
+        SUM(CASE WHEN t.type = 1 THEN amount ELSE 0 END) OVER (PARTITION BY w.id) AS income,
+        SUM(CASE WHEN t.type = 2 THEN amount ELSE 0 END) OVER (PARTITION BY w.id) AS spent
+        FROM public.wallet w
+        INNER JOIN public.transaction_history t ON w.id = t.wallet_id
+      WHERE 
+        w.user_id= $1
+        AND EXTRACT(MONTH FROM w.date) = EXTRACT(MONTH FROM '${date}'::DATE)
+        ${!global._.isEmpty(parseWalletIds) ? `AND w.id IN (${parseWalletIds.join(',')})` : ''}
+        ${!global._.isEmpty(types)? `AND w.type IN (${parseTypes.join(',')})` : ''}
+    `;
+
+    const data = await this.pg.execute(cmd, [userId]);
+
+    return data;
+  }
 }
