@@ -8,9 +8,7 @@ export class CategoryService {
   ) {}
 
   async getList() {
-
-    const data = await this.postgresService.execute(`SELECT * FROM public.category LIMIT 100`);
-
+    const data = await this.postgresService.execute(`SELECT * FROM public.category ORDER BY modified_at ASC LIMIT 100 `);
     return data;
 
   }

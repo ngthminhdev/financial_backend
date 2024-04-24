@@ -16,6 +16,7 @@ import {memberShipScript} from 'src/sql/member-ship-sql';
 import {transactionHistoryScript} from 'src/sql/transaction-history-sql';
 import {walletScript} from 'src/sql/wallet-sql';
 import {userConfigScript} from 'src/sql/user-config-sql';
+import {userCategoryScript} from 'src/sql/user-category-sql';
 
 @Global()
 @Injectable()
@@ -54,6 +55,8 @@ export class PostgresqlService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Init table WALLET successfully!')
     await this.postgresClient.query(transactionHistoryScript);
     this.logger.log('Init table TRANSACTION_HISTORY successfully!')
+    await this.postgresClient.query(userCategoryScript);
+    this.logger.log('Init table USER_CATEGORY successfully!')
   }
 
   private async connectPostgreSQL() {
