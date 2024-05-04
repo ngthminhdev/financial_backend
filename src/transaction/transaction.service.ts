@@ -118,17 +118,20 @@ export class TransactionService {
               c.id as id,
               c.icon as icon,
               c.name as name,
+              uc.max_budget as max_budget,
               SUM(t.amount) as amount_used
           FROM public.transaction_history t
           INNER JOIN public.category c
           ON t.category_id = c.id
           INNER JOIN public.user_config u
           ON t.user_id = u.user_id
+          LEFT JOIN public.user_category uc
+          ON uc.category_id = c.id
           WHERE t.wallet_id = $1
           AND date >= '${fromDate}' AND date <= '${toDate}'
           AND t.type = ${type}
           AND c.id NOT IN (SELECT unnest(u.un_apply_categories))
-          GROUP BY c.id, c.name, c.icon
+          GROUP BY c.id, c.name, c.icon, uc.max_budget
           ORDER BY amount_used ASC;
       `, [walletId]
       );
